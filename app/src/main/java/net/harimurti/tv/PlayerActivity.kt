@@ -328,7 +328,11 @@ class PlayerActivity : AppCompatActivity() {
         val userAgent = current?.userAgent ?: "NontonTV/${BuildConfig.VERSION_NAME} (Android ${Build.VERSION.RELEASE})"
         val referer = current?.referer.toString()
         val streamUrl = current?.streamUrl?.decodeUrl()
-        val mediaItem = MediaItem.fromUri(Uri.parse(streamUrl))
+        val mimeType = streamUrl.toStreamMimeType(current?.manifestType)
+        val mediaItem = MediaItem.Builder()
+            .setUri(Uri.parse(streamUrl))
+            .apply { if (mimeType != null) setMimeType(mimeType) }
+            .build()
 
         // create some factory
         val httpDataSourceFactory = DefaultHttpDataSource.Factory()

@@ -32,6 +32,8 @@ class M3uTool {
                     chRaw.drmType = it.findPattern(".*license_type=(.+?)\$")
                 if (it.contains("license_key"))
                     chRaw.drmKey = it.findPattern(".*license_key=(.+?)\$")
+                if (it.contains("manifest_type"))
+                    chRaw.manifestType = it.findPattern(".*manifest_type=(.+?)\$")
                 chReset = false
                 return@forEach
             }
@@ -70,6 +72,7 @@ class M3uTool {
                     logoUrl = chRaw.logoUrl
                     streamUrl = chRaw.streamUrl
                     this.drmId = drmId
+                    manifestType = chRaw.manifestType
                     userAgent = chRaw.userAgent
                     referer = chRaw.referer
                 }

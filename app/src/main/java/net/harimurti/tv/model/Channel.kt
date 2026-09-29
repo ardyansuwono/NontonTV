@@ -10,6 +10,8 @@ class Channel {
     var streamUrl: String? = null
     @SerializedName("drm_id")
     var drmId: String? = null
+    @SerializedName("manifest_type")
+    var manifestType: String? = null
     @SerializedName("user_agent")
     var userAgent: String? = null
     @SerializedName("referer")

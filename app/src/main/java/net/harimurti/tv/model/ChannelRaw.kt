@@ -7,6 +7,7 @@ class ChannelRaw {
     var streamUrl: String? = null
     var drmType: String? = null
     var drmKey: String? = null
+    var manifestType: String? = null
     var userAgent: String? = null
     var referer: String? = null
 }
