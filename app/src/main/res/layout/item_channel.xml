@@ -11,28 +11,53 @@
             type="int" />
         <variable
             name="modelChannel"
-            type="net.harimurti.tv.model.Channel" />
+            type="id.tipime.tipistream.model.Channel" />
         <variable
             name="clickListener"
-            type="net.harimurti.tv.adapter.ChannelClickListener" />
+            type="id.tipime.tipistream.adapter.ChannelClickListener" />
     </data>
     <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/channel_grid_spacing">
 
-        <Button
+        <LinearLayout
             android:id="@+id/btn_play"
             android:layout_width="@dimen/btn_channel_width"
             android:layout_height="@dimen/btn_channel_height"
             android:background="@drawable/button_channel"
-            android:ellipsize="end"
-            android:lines="3"
+            android:orientation="vertical"
+            android:gravity="center"
             android:padding="@dimen/btn_channel_padding"
-            tools:text="DUMMY CHANNEL WITH LONG NAME IN IT"
-            android:text="@{modelChannel.name}"
+            android:clickable="true"
+            android:focusable="true"
             android:onClick="@{() -> clickListener.onClicked(modelChannel, catId, chId)}"
             android:onLongClick="@{() -> clickListener.onLongClicked(modelChannel, catId, chId)}"
-            app:onFocusChangeListener="@{clickListener.onFocusChanged}"/>
+            app:onFocusChangeListener="@{clickListener.onFocusChanged}">
 
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:scaleType="fitCenter"
+                app:logoUrl="@{modelChannel.logoUrl}"
+                tools:ignore="ContentDescription"
+                tools:src="@drawable/logo_tipistream" />
+
+            <TextView
+                android:id="@+id/text_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="2"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:text="@{modelChannel.name}"
+                tools:text="DUMMY CHANNEL NAME" />
+
+        </LinearLayout>
     </FrameLayout>
 </layout>

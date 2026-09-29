@@ -5,7 +5,7 @@
     <data>
         <variable
             name="sourcesAdapter"
-            type="net.harimurti.tv.adapter.SourcesAdapter" />
+            type="id.tipime.tipistream.adapter.SourcesAdapter" />
     </data>
     <RelativeLayout
         android:layout_width="match_parent"

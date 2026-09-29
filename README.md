@@ -1,6 +1,8 @@
-# NontonTV
+# TipiStream
 
-Nonton siaran televisi dimana aja dan kapan aja, asalkan kuota banyak & internet kenceng. Cocok untuk dipasang ke android stb/box. Aplikasi bisa diunduh [disini](https://github.com/hariimurti/NontonTV/releases).
+Nonton siaran televisi dimana aja dan kapan aja, asalkan kuota banyak & internet kenceng. Cocok untuk dipasang ke android stb/box.
+
+> TipiStream berbasis proyek open-source [NontonTV](https://github.com/hariimurti/NontonTV) oleh Hari Murti. Terima kasih untuk kode sumber aslinya.
 
 
 # PERINGATAN & LARANGAN
@@ -18,7 +20,7 @@ Nonton siaran televisi dimana aja dan kapan aja, asalkan kuota banyak & internet
 - support screen mode : fit, fill, zoom, fixed witdh, fixed height
 - support picture-to-picture
 - support remote dpad
-- support playlist json (nontontv) & m3u biasa
+- support playlist json (tipistream) & m3u biasa
 - support playlist kustom (lokal, maupun tautan)
 - support protocol rtmp
 - jalankan aplikasi saat booting

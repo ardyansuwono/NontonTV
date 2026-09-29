@@ -73,3 +73,9 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+# local dev artifacts / private data (do NOT publish to a public repo)
+/brand/
+/json/tipi.m3u
+/UI Daftar Channel.jpg
+/tipistream_logo.png

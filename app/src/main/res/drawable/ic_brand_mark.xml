@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- play triangle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,37 L30,71 L56,54 Z" />
+    <!-- broadcast / stream waves -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M60,45 Q68,54 60,63" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M66,39 Q78,54 66,69" />
+</vector>

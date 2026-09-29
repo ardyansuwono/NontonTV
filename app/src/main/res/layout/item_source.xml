@@ -8,10 +8,10 @@
             type="int" />
         <variable
             name="modelSource"
-            type="net.harimurti.tv.model.Source" />
+            type="id.tipime.tipistream.model.Source" />
         <variable
             name="clickListener"
-            type="net.harimurti.tv.adapter.SourceClickListener" />
+            type="id.tipime.tipistream.adapter.SourceClickListener" />
     </data>
     <RelativeLayout
         android:layout_width="match_parent"

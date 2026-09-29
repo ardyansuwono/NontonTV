@@ -1,19 +1,23 @@
 <resources>
-    <string name="app_name" translatable="false">Nonton TV</string>
+    <string name="app_name" translatable="false">TipiStream</string>
+    <string name="app_tagline">Streaming ringan, tanpa ribet</string>
 
     <!-- json link -->
-    <string name="website" translatable="false">https://github.com/hariimurti/NontonTV</string>
-    <string name="telegram_group" translatable="false">https://t.me/paijemdev</string>
+    <string name="website" translatable="false">https://tipime.my.id</string>
+    <string name="telegram_group" translatable="false">https://t.me/ifn_axlinesid</string>
     <string name="iptv_playlist" translatable="false">https://iptv-org.github.io/iptv/countries/%s.m3u</string>
+    <string name="default_playlist_url" translatable="false">https://go.tipime.my.id/user/nonton</string>
     <string name="json_release" translatable="false">https://github.com/hariimurti/NontonTV/raw/master/json/release.json</string>
     <string name="apk_release" translatable="false">https://github.com/hariimurti/NontonTV/releases/download/%s/net.harimurti.tv_%s_b%d.apk</string>
     <string name="gh_contributors" translatable="false">https://api.github.com/repos/hariimurti/NontonTV/contributors</string>
-    <string name="main_contributors" translatable="false">harimurti, madbulls</string>
+    <string name="main_contributors" translatable="false">harimurti, madbulls, @Ilham_maulana1</string>
 
     <!-- some text -->
     <string name="text_presents">.: PaijemDev Presents :.</string>
     <string name="app_tagline_one">Free - OpenSource - No Ads,</string>
     <string name="app_tagline_two">Light - Simple - Minimalist</string>
+    <string name="credit_by" translatable="false">TipiStream</string>
+    <string name="based_on">Berbasis proyek open-source NontonTV oleh Hari Murti</string>
     <string name="thanks_to">Thanks To :</string>
     <string name="thanks_for_support">iptv-org for playlist and people who support this project 😘</string>
     <string name="btn_retry">Retry</string>
@@ -97,7 +101,7 @@
     <string name="input_url">Link URL</string>
     <string name="show_hidden" translatable="false">Hidden</string>
     <string name="title_select_file_json">Select File Json</string>
-    <string name="default_playlist" translatable="false">IPTV-ORG ( %s )</string>
+    <string name="default_playlist" translatable="false">TipiStream Playlist</string>
     <string name="null_playlist">No playlists that can be displayed. Check your settings!</string>
     <string name="checking_url">checking url…</string>
     <string name="link_error">Link Error!</string>

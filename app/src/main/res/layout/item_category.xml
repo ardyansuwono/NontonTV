@@ -5,11 +5,11 @@
     <data>
         <variable
             name="catModel"
-            type="net.harimurti.tv.model.Category" />
+            type="id.tipime.tipistream.model.Category" />
 
         <variable
             name="chAdapter"
-            type="net.harimurti.tv.adapter.ChannelAdapter" />
+            type="id.tipime.tipistream.adapter.ChannelAdapter" />
     </data>
     <LinearLayout
         android:orientation="vertical"
@@ -31,6 +31,7 @@
             android:maxLines="1"
             android:textStyle="bold"
             android:textAllCaps="true"
+            android:textColor="@android:color/white"
             android:textSize="@dimen/cat_text_size"
             android:background="@drawable/corner_right"
             tools:text="CATEGORY_NAME"
