@@ -42,6 +42,16 @@ import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.trackselection.MappingTrackSelector.MappedTrackInfo
 import androidx.media3.exoplayer.upstream.DefaultAllocator
+import androidx.media3.common.DrmInitData
+import androidx.media3.common.MimeTypes
+import androidx.media3.exoplayer.dash.DashMediaSource
+import androidx.media3.exoplayer.dash.manifest.DashManifestParser
+import androidx.media3.extractor.mp4.PsshAtomUtil
+import android.util.Base64
+import android.util.Pair
+import org.json.JSONObject
+import org.xmlpull.v1.XmlPullParser
+import java.nio.ByteBuffer
 import androidx.media3.ui.PlayerView
 import id.tipime.tipistream.databinding.ActivityPlayerBinding
 import id.tipime.tipistream.databinding.CustomControlBinding
@@ -175,17 +185,14 @@ class PlayerActivity : AppCompatActivity() {
         bindingControl.trackSelection.setOnClickListener { showTrackSelector() }
         bindingControl.buttonLock.apply {
             visibility = if (isTelevision) View.GONE else View.VISIBLE
-            setOnClickListener {
-                if (!isLocked) {
-                    (it as ImageButton).setImageResource(R.drawable.ic_lock)
-                    lockControl(true)
-                }
-            }
-            setOnLongClickListener {
+            // tap toggles lock/unlock (long-press kept for backward compatibility)
+            val toggleLock = {
                 val resId = if (isLocked) R.drawable.ic_lock_open else R.drawable.ic_lock
-                (it as ImageButton).setImageResource(resId)
-                lockControl(!isLocked); true
+                (this as ImageButton).setImageResource(resId)
+                lockControl(!isLocked)
             }
+            setOnClickListener { toggleLock() }
+            setOnLongClickListener { toggleLock(); true }
         }
         bindingControl.buttonVolume.setOnClickListener { showVolumeMenu() }
         isMute(bindingControl.buttonVolume)
@@ -427,10 +434,29 @@ class PlayerActivity : AppCompatActivity() {
                     else LocalMediaDrmCallback(drmLicense.key.toClearKey())
             val drmSessionManager = DefaultDrmSessionManager.Builder()
                     .setUuidAndExoMediaDrmProvider(uuid, FrameworkMediaDrm.DEFAULT_PROVIDER)
-                    .setMultiSession(uuid != C.CLEARKEY_UUID)
+                    // Multi-session so every distinct KID gets its own DRM session. A ClearKey DASH
+                    // stream commonly carries several keys (one per representation/track); with a
+                    // single session the platform ClearKey CDM may keep only the first requested
+                    // KID's key, leaving the other tracks undecryptable (reported as UNSUPPORTED_DRM).
+                    // LocalMediaDrmCallback returns the full key set for each request, so this is safe.
+                    .setMultiSession(true)
                     .build(drmCallback)
-            mediaSource = mediaSourceFactory.setDrmSessionManagerProvider { drmSessionManager }
-                    .createMediaSource(mediaItem)
+
+            // Some DASH streams advertise ONLY Widevine/PlayReady in <ContentProtection> even though
+            // free ClearKey keys are supplied out-of-band (as here). ExoPlayer's ClearKey session
+            // manager then finds no matching scheme data and marks every track FORMAT_UNSUPPORTED_DRM
+            // (the "[DRM scheme=cenc]" case). Inject a ClearKey (common-PSSH) init data built from the
+            // KIDs in our license so ExoPlayer requests exactly those keys, which the callback supplies.
+            val clearKeyIds = if (uuid == C.CLEARKEY_UUID) parseClearKeyIds(drmLicense.key) else emptyList()
+            mediaSource = if (clearKeyIds.isNotEmpty() && mimeType == MimeTypes.APPLICATION_MPD) {
+                DashMediaSource.Factory(dataSourceFactory)
+                        .setDrmSessionManagerProvider { drmSessionManager }
+                        .setManifestParser(ClearKeyDashManifestParser(clearKeyIds))
+                        .createMediaSource(mediaItem)
+            } else {
+                mediaSourceFactory.setDrmSessionManagerProvider { drmSessionManager }
+                        .createMediaSource(mediaItem)
+            }
 
             if (!isDeviceSupportDrm(drmLicense.type)) return
         }
@@ -608,9 +634,75 @@ class PlayerActivity : AppCompatActivity() {
                 isVideoProblem -> "video"
                 else -> "audio"
             }
-            val message = String.format(getString(R.string.error_unsupported), problem)
+            if (!isVideoProblem && !isAudioProblem) return
+            // Both codec-missing and DRM failures surface here as UNSUPPORTED_TRACKS. When it's
+            // DRM, also report the encryption scheme + codec + device API — a FORMAT_UNSUPPORTED_DRM
+            // means ExoPlayer's DrmSessionManager can't even acquire a session for this scheme
+            // (e.g. cbcs on API < 25), so it never reaches the keys. That detail pinpoints the cause.
+            val drmDiag = drmDiagnostic(mappedTrackInfo)
+            val reason = drmDiag ?: "codec"
+            val message = String.format(getString(R.string.error_unsupported), problem) + " [$reason]"
             if (isVideoProblem) showMessage(message, false)
-            else if (isAudioProblem) Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
+            else Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** When a track is unsupported specifically because of DRM (FORMAT_UNSUPPORTED_DRM), returns a
+     *  short diagnostic string "DRM scheme=… codec=… api=…"; null when the cause is a missing codec. */
+    private fun drmDiagnostic(info: MappedTrackInfo): String? {
+        for (rendererIndex in 0 until info.rendererCount) {
+            val groups = info.getTrackGroups(rendererIndex)
+            for (g in 0 until groups.length) {
+                val group = groups.get(g)
+                for (t in 0 until group.length) {
+                    if (info.getTrackSupport(rendererIndex, g, t) == C.FORMAT_UNSUPPORTED_DRM) {
+                        val f = group.getFormat(t)
+                        val scheme = f.drmInitData?.schemeType ?: "null"
+                        val codec = f.sampleMimeType ?: f.codecs ?: "?"
+                        return "DRM scheme=$scheme codec=$codec api=${Build.VERSION.SDK_INT}"
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    /** Extracts the 16-byte KIDs from a ClearKey license JSON ({"keys":[{"kid":"…"}…]}).
+     *  Returns empty for the "kid:key" hex shorthand or any parse failure. */
+    private fun parseClearKeyIds(license: String): List<UUID> {
+        val json = license.trim()
+        if (!json.startsWith("{")) return emptyList()
+        return try {
+            val arr = JSONObject(json).optJSONArray("keys") ?: return emptyList()
+            val ids = ArrayList<UUID>()
+            for (i in 0 until arr.length()) {
+                val kid = arr.getJSONObject(i).optString("kid")
+                if (kid.isNullOrBlank()) continue
+                val bytes = Base64.decode(kid, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+                if (bytes.size == 16) {
+                    val bb = ByteBuffer.wrap(bytes)
+                    ids.add(UUID(bb.long, bb.long))
+                }
+            }
+            ids
+        } catch (e: Exception) {
+            Log.e("PlayerActivity", "parseClearKeyIds failed: ${e.message}")
+            emptyList()
+        }
+    }
+
+    /** DASH manifest parser that forces a ClearKey (common-PSSH) init data built from the supplied
+     *  KIDs, replacing whatever DRM systems the manifest advertises. Lets ExoPlayer's ClearKey path
+     *  engage on streams that only signal Widevine/PlayReady in their <ContentProtection>. */
+    private class ClearKeyDashManifestParser(kids: List<UUID>) : DashManifestParser() {
+        private val schemeData: DrmInitData.SchemeData =
+            DrmInitData.SchemeData(
+                C.COMMON_PSSH_UUID, MimeTypes.VIDEO_MP4,
+                PsshAtomUtil.buildPsshAtom(C.COMMON_PSSH_UUID, kids.toTypedArray(), null))
+
+        override fun parseContentProtection(parser: XmlPullParser): Pair<String, DrmInitData.SchemeData> {
+            super.parseContentProtection(parser)   // consume the element to keep the parser in sync
+            return Pair.create(C.CENC_TYPE_cenc, schemeData)
         }
     }
 

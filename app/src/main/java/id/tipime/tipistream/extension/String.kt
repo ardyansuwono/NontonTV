@@ -59,8 +59,15 @@ fun String.decodeHex(): ByteArray {
 }
 
 fun String.toClearKey(): ByteArray {
-    val keyId = this.substringBefore(":").decodeHex().toBase64Url()
-    val keyValue = this.substringAfter(":").decodeHex().toBase64Url()
+    val raw = this.trim()
+    // A KODIPROP license_key may already be a full ClearKey license JSON
+    // (e.g. {"keys":[{"kty":"oct","kid":"…","k":"…"}, …],"type":"temporary"}).
+    // In that case use it verbatim — trying to hex-split it on ':' throws
+    // NumberFormatException in decodeHex() and force-closes the player.
+    if (raw.startsWith("{")) return raw.toByteArray()
+    // Otherwise it's the "kid:key" hex shorthand -> build the license JSON.
+    val keyId = raw.substringBefore(":").decodeHex().toBase64Url()
+    val keyValue = raw.substringAfter(":").decodeHex().toBase64Url()
     return """{"keys":[{"kty":"oct","k":"$keyValue","kid":"$keyId"}],"type":"temporary"}""".toByteArray()
 }
 
