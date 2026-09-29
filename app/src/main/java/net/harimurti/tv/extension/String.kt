@@ -1,7 +1,7 @@
 package net.harimurti.tv.extension
 
 import android.text.Html
-import com.google.android.exoplayer2.C
+import androidx.media3.common.C
 import okhttp3.Request
 import java.io.File
 import java.net.URLDecoder

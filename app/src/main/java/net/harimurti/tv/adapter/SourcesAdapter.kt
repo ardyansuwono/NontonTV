@@ -72,7 +72,7 @@ class SourcesAdapter(private val sources: ArrayList<Source>?):
 
     override fun onlongClicked(view: View, source: Source?, position: Int): Boolean {
         if (position == 0) {
-            PopupMenu(context, view, Gravity.NO_GRAVITY, R.attr.actionOverflowMenuStyle, 0).apply {
+            PopupMenu(context, view, Gravity.NO_GRAVITY, androidx.appcompat.R.attr.actionOverflowMenuStyle, 0).apply {
                 inflate(R.menu.country_list)
                 setOnMenuItemClickListener { m: MenuItem ->
                     val mode = when(m.itemId) {

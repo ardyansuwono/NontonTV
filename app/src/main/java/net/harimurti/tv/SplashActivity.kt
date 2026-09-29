@@ -1,10 +1,8 @@
 package net.harimurti.tv
 
-import android.Manifest
 import android.app.DownloadManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.*
 import androidx.appcompat.app.AppCompatActivity
@@ -62,7 +60,7 @@ class SplashActivity : AppCompatActivity() {
                     try {
                         val content = response.content()
                         if (content.isNullOrBlank()) throw Exception("null content")
-                        if (!response.isSuccessful) throw Exception(response.message())
+                        if (!response.isSuccessful) throw Exception(response.message)
                         val ghUsers = Gson().fromJson(content, Array<GithubUser>::class.java)
                         val users = ghUsers.toStringContributor()
                         preferences.contributors = users
@@ -101,36 +99,9 @@ class SplashActivity : AppCompatActivity() {
         this.finish()
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        // check new release
-        checkNewRelease()
-
-        if (requestCode != 260621) return
-        if (!grantResults.contains(PackageManager.PERMISSION_DENIED)) return
-        Toast.makeText(this, getString(R.string.must_allow_permissions), Toast.LENGTH_LONG).show()
-    }
-
     private fun prepareWhatIsNeeded() {
-        // ask to grant all permissions
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setStatus(R.string.status_checking_permission)
-            val permissions = arrayOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-            var passes = true
-            for (perm in permissions) {
-                if (checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(permissions, 260621)
-                    passes = false
-                    break
-                }
-            }
-            if (!passes) return
-        }
-
-        // check new release
+        // playlist files are now read via Storage Access Framework (content:// uris),
+        // so no runtime storage permission is required on modern Android.
         checkNewRelease()
     }
 
@@ -147,7 +118,7 @@ class SplashActivity : AppCompatActivity() {
             override fun onResponse(call: Call, response: Response) {
                 val content = response.content()
                 if (!response.isSuccessful || content.isNullOrBlank()) {
-                    Log.e("HttpClient", "Could not check new update! ${response.message()}")
+                    Log.e("HttpClient", "Could not check new update! ${response.message}")
                     return lunchMainActivity()
                 }
 

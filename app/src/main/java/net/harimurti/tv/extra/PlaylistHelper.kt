@@ -1,5 +1,6 @@
 package net.harimurti.tv.extra
 
+import android.net.Uri
 import android.util.Log
 import com.google.gson.Gson
 import net.harimurti.tv.App
@@ -40,6 +41,26 @@ class PlaylistHelper {
             file.readText(Charsets.UTF_8).toPlaylist()
         } catch (e: Exception) {
             if (file != cache) Log.e(TAG, String.format("Could not read from %s", file), e)
+            null
+        }
+    }
+
+    /**
+     * Reads a playlist from a user-selected source path, which can be either a plain
+     * filesystem path or a Storage Access Framework "content://" uri (scoped storage).
+     */
+    fun readSource(path: String): Playlist? {
+        return try {
+            val content = if (path.startsWith("content://")) {
+                context.contentResolver.openInputStream(Uri.parse(path))
+                    ?.use { it.readBytes().toString(Charsets.UTF_8) }
+                    ?: return null
+            } else {
+                File(path).readText(Charsets.UTF_8)
+            }
+            content.toPlaylist()
+        } catch (e: Exception) {
+            Log.e(TAG, "Could not read from $path", e)
             null
         }
     }

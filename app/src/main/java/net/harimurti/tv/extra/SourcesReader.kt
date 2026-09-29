@@ -45,9 +45,9 @@ class SourcesReader {
         // report progress
         result?.onProgress(source.path)
 
-        // read local playlist
+        // read local playlist (file path or content:// uri)
         if (!source.path.isLinkUrl()) {
-            val playlist = PlaylistHelper().readFile(source.path.toFile())
+            val playlist = PlaylistHelper().readSource(source.path)
             result?.onResponse(playlist)
             process(useCache); return
         }
@@ -72,7 +72,7 @@ class SourcesReader {
                                 if (!playlist.isCategoriesEmpty()) result?.onResponse(playlist)
                                 else result?.onError(source.path, "parse error?")
                             } else result?.onError(source.path, "null content")
-                        } else result?.onError(source.path, response.message())
+                        } else result?.onError(source.path, response.message)
                         // repeat until sources is empty
                         process(useCache)
                     }

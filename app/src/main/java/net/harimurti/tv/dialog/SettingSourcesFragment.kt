@@ -2,69 +2,62 @@ package net.harimurti.tv.dialog
 
 import android.content.ClipboardManager
 import android.content.Context
-import android.os.Build
+import android.content.Intent
 import android.os.Bundle
-import android.os.Environment
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
-import com.developer.filepicker.model.DialogConfigs
-import com.developer.filepicker.model.DialogProperties
 import net.harimurti.tv.R
 import net.harimurti.tv.adapter.SourcesAdapter
 import net.harimurti.tv.databinding.SettingSourcesFragmentBinding
 import net.harimurti.tv.extension.isLinkUrl
 import net.harimurti.tv.extra.SourceChecker
 import net.harimurti.tv.model.Source
-import java.io.File
 
 class SettingSourcesFragment: Fragment() {
     companion object {
         var sources: ArrayList<Source>? = null
     }
 
-    @Suppress("DEPRECATION")
+    private var adapter: SourcesAdapter? = null
+
+    // Storage Access Framework picker (scoped-storage friendly, replaces legacy FilePicker)
+    private val openDocuments = registerForActivityResult(
+        ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris ->
+        val current = adapter ?: return@registerForActivityResult
+        for (uri in uris) {
+            // persist read access across reboots
+            try {
+                requireContext().contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: Exception) { /* some providers don't grant persistable access */ }
+            current.addItem(Source().apply {
+                this.path = uri.toString()
+                active = true
+            })
+        }
+        sources = current.getItems()
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = SettingSourcesFragmentBinding.inflate(inflater, container, false)
 
         val adapter = SourcesAdapter(sources)
+        this.adapter = adapter
         binding.sourcesAdapter = adapter
         binding.rvSources.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
 
-        val properties = DialogProperties().apply {
-            extensions = arrayOf("json","m3u")
-            selection_mode = DialogConfigs.MULTI_MODE
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                root = File(Environment.getExternalStorageDirectory().path)
-                error_dir = File(Environment.getExternalStorageDirectory().path)
-                offset  = File(Environment.getExternalStorageDirectory().path)
-            } else {
-                root = File("/")
-                offset  = File("/mnt/sdcard:/storage")
-            }
-        }
-
-        val filePicker = FilePickerDialog(requireContext()).apply {
-            setTitle(getString(R.string.title_select_file_json))
-            setProperties(properties)
-            setDialogSelectionListener {
-                for (path in it){
-                    adapter.addItem(Source().apply {
-                        this.path = path
-                        active = true
-                    })
-                }
-                sources = adapter.getItems()
-            }
-        }
-
         binding.btnPick.setOnClickListener {
-            filePicker.show()
+            // json / m3u playlists don't have reliable mime types across providers, so allow any file
+            openDocuments.launch(arrayOf("*/*"))
         }
 
         val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -116,5 +109,10 @@ class SettingSourcesFragment: Fragment() {
         }
 
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        adapter = null
     }
 }

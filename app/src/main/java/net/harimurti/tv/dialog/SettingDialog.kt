@@ -46,7 +46,7 @@ class SettingDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return AppCompatDialog(activity, R.style.SettingsDialogThemeOverlay).apply {
+        return AppCompatDialog(requireActivity(), R.style.SettingsDialogThemeOverlay).apply {
             setTitle(R.string.settings)
             setCanceledOnTouchOutside(false)
         }
