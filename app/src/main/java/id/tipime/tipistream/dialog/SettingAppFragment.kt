@@ -16,8 +16,6 @@ class SettingAppFragment : Fragment() {
         var sortChannel = true
         var optimizePrebuffer = true
         var reverseNavigation = false
-        var trakteerEnabled = true
-        var trakteerToken = ""
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -72,23 +70,6 @@ class SettingAppFragment : Fragment() {
             isChecked = reverseNavigation
             setOnClickListener {
                 reverseNavigation = isChecked
-            }
-        }
-
-        binding.trakteerEnabled.apply {
-            isChecked = trakteerEnabled
-            setOnClickListener {
-                trakteerEnabled = isChecked
-            }
-        }
-
-        binding.trakteerToken.apply {
-            setText(trakteerToken)
-            // the switch gates the widget; the token only matters when it's on
-            isEnabled = trakteerEnabled
-            binding.trakteerEnabled.setOnCheckedChangeListener { _, isChecked ->
-                trakteerEnabled = isChecked
-                isEnabled = isChecked
             }
         }
 

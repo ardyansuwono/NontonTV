@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<MPD profiles="urn:mpeg:dash:profile:isoff-live:2011" type="dynamic" availabilityStartTime="2026-05-15T03:11:24Z" minimumUpdatePeriod="PT4.0S" minBufferTime="PT4.0S" publishTime="2026-09-30T05:51:12.978Z" timeShiftBufferDepth="PT60.0S" suggestedPresentationDelay="PT4.0S" xmlns="urn:mpeg:dash:schema:mpd:2011" xmlns:cenc="urn:mpeg:cenc:2013" xmlns:mspr="urn:microsoft:playready" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:mpeg:dash:schema:mpd:2011 DASH-MPD.xsd">
+	<Location>https://tencent-css-live.byteplaycdn.com/vos/DASH/maxstream/manifest.mpd?encp=CMIyLfxrj__9qofghPwNTA&amp;uid=&amp;expp=1790758206</Location><Period start="PT0S" id="1">
+		<AdaptationSet mimeType="video/mp4" startWithSAP="1" segmentAlignment="true" par="16:9">
+			<ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" />
+			<ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"><cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">AAAAOHBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAABgSEHJ0iedYMEXejX4RisuPdX1I49yVmwY=</cenc:pssh></ContentProtection>
+			<SegmentTemplate timescale="10000000" presentationTimeOffset="0" media="$RepresentationID$_Segment-$Time$.m4v" initialization="$RepresentationID$_init.m4i">
+				<SegmentTimeline>
+					<S t="119327411937276" d="40000000" r="14" />
+				</SegmentTimeline>
+			</SegmentTemplate>
+			<Representation width="640" height="360" frameRate="25" codecs="avc1.4d401e" scanType="progressive" sar="1:1" id="1778814671782item-01item" bandwidth="800000" />
+			<Representation width="960" height="540" frameRate="25" codecs="avc1.4d401f" scanType="progressive" sar="1:1" id="1778814671782item-02item" bandwidth="1200000" />
+			<Representation width="1280" height="720" frameRate="25" codecs="avc1.4d401f" scanType="progressive" sar="1:1" id="1778814671782item-03item" bandwidth="1500000" />
+			<Representation width="1920" height="1080" frameRate="25" codecs="avc1.4d4028" scanType="progressive" sar="1:1" id="1778814671782item-04item" bandwidth="2500000" />
+		</AdaptationSet>
+		<AdaptationSet mimeType="audio/mp4" startWithSAP="1" lang="eng" segmentAlignment="true">
+			<ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" />
+			<ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"><cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">AAAAOHBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAABgSEHJ0iedYMEXejX4RisuPdX1I49yVmwY=</cenc:pssh></ContentProtection>
+			<SegmentTemplate timescale="10000000" presentationTimeOffset="0" media="$RepresentationID$_Segment-$Time$.m4a" initialization="$RepresentationID$_init.m4i">
+				<SegmentTimeline>
+					<S t="119327412097276" d="39893334" />
+					<S t="119327451990610" d="40106666" />
+					<S t="119327492097276" d="39893334" />
+					<S t="119327531990610" d="40106666" />
+					<S t="119327572097276" d="39893334" />
+					<S t="119327611990610" d="40106666" />
+					<S t="119327652097276" d="39893334" />
+					<S t="119327691990610" d="40106666" />
+					<S t="119327732097276" d="39893334" />
+					<S t="119327771990610" d="40106666" />
+					<S t="119327812097276" d="39893334" />
+					<S t="119327851990610" d="40106666" />
+					<S t="119327892097276" d="39893334" />
+					<S t="119327931990610" d="40106666" />
+					<S t="119327972097276" d="39893334" />
+				</SegmentTimeline>
+			</SegmentTemplate>
+			<Representation audioSamplingRate="48000" codecs="mp4a.40.2" id="1778814671782item-05item" bandwidth="96000" />
+		</AdaptationSet>
+	</Period>
+</MPD>
+
+
+berikut key nya:
+--key aa80b79a8f4aa7c2e6cd60b8e85a7311:916567d4e5b8b0def5afdb51a229140b
+--key 727489e7583045de8d7e118acb8f757d:13fe71d17a1f9a8cdec42b1089275b03
+--key 16f02d189e00d604897266d298bfd577:ce16832d2d8f2501dc4a86d75084dd0f
+--key 053ddf1ac988aadabe0a5399097d0ed7:5fda493df67c2df6af8602e91a7b3789
+--key 2d3f7d05ff3b70ea19eb3a01892e78a8:cb6b65aba554e6bd8e6bd6c9b497b5c4
+--key 45d9d1dd678b40c3a2ae928962190378:f14499a572890e0bd5ce738768176055
+--key 91337a7d4d9b1c0ae566a5b2a7e99704:b30069f17ea2e41119b635bfa9931c6a
+--key 3cd94994852f104f15be42983e3e461d:9f67bedd12e4e7fd51733b235a7e624a

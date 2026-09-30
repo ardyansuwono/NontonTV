@@ -23,8 +23,6 @@ class SettingDialog : DialogFragment() {
     private val tabTitle = arrayOf(R.string.tab_sources, R.string.tab_app, R.string.tab_about)
     private var revertCountryId = ""
     private var isCancelled = true
-    private var trakteerWasEnabled = true
-    private var trakteerWasToken = ""
 
     companion object {
         var isSourcesChanged = false
@@ -66,10 +64,6 @@ class SettingDialog : DialogFragment() {
         SettingAppFragment.sortChannel = preferences.sortChannel
         SettingAppFragment.optimizePrebuffer = preferences.optimizePrebuffer
         SettingAppFragment.reverseNavigation = preferences.reverseNavigation
-        SettingAppFragment.trakteerEnabled = preferences.trakteerEnabled
-        SettingAppFragment.trakteerToken = preferences.trakteerToken
-        trakteerWasEnabled = preferences.trakteerEnabled
-        trakteerWasToken = preferences.trakteerToken
         SettingSourcesFragment.sources = preferences.sources
         revertCountryId = preferences.countryId
 
@@ -93,9 +87,6 @@ class SettingDialog : DialogFragment() {
                 preferences.sortChannel = SettingAppFragment.sortChannel
                 preferences.optimizePrebuffer = SettingAppFragment.optimizePrebuffer
                 preferences.reverseNavigation = SettingAppFragment.reverseNavigation
-                // trakteer running-text
-                preferences.trakteerEnabled = SettingAppFragment.trakteerEnabled
-                preferences.trakteerToken = SettingAppFragment.trakteerToken
                 // playlist sources
                 val sources = SettingSourcesFragment.sources
                 if (sources?.filter { s -> s.active }?.size == 0) {
@@ -112,26 +103,13 @@ class SettingDialog : DialogFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        if (isCancelled) {
-            preferences.countryId = revertCountryId
-            return
-        }
-        if (isSourcesChanged) sendUpdatePlaylist(requireContext())
-        // the trakteer widget can be toggled or re-tokened without touching the playlist
-        val trakteerChanged = SettingAppFragment.trakteerEnabled != trakteerWasEnabled ||
-            SettingAppFragment.trakteerToken != trakteerWasToken
-        if (trakteerChanged && !isSourcesChanged) sendTrakteerChanged(requireContext())
+        if (isCancelled) preferences.countryId = revertCountryId
+        else if (isSourcesChanged) sendUpdatePlaylist(requireContext())
     }
 
     private fun sendUpdatePlaylist(context: Context) {
         LocalBroadcastManager.getInstance(context).sendBroadcast(
             Intent(MainActivity.MAIN_CALLBACK)
                 .putExtra(MainActivity.MAIN_CALLBACK, MainActivity.UPDATE_PLAYLIST))
-    }
-
-    private fun sendTrakteerChanged(context: Context) {
-        LocalBroadcastManager.getInstance(context).sendBroadcast(
-            Intent(MainActivity.MAIN_CALLBACK)
-                .putExtra(MainActivity.MAIN_CALLBACK, MainActivity.TRAKTEER_CHANGED))
     }
 }

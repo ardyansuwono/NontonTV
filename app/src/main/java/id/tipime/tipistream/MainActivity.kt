@@ -4,12 +4,8 @@ import android.annotation.SuppressLint
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.os.*
-import android.text.TextUtils
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -37,18 +33,12 @@ open class MainActivity : AppCompatActivity() {
     private var categories: ArrayList<Category>? = null
     private var selectedIndex = 0
 
-    // running-text sources for the bottom banner
-    private var playlistMessage: String? = null
-    private var trakteerMessages: List<String> = emptyList()
-    private var trakteerClient: TrakteerClient? = null
-
     private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
             when(intent.getStringExtra(MAIN_CALLBACK)) {
                 UPDATE_PLAYLIST -> updatePlaylist(false)
                 INSERT_FAVORITE -> onFavoriteInserted()
                 REMOVE_FAVORITE -> onFavoriteRemoved()
-                TRAKTEER_CHANGED -> restartTrakteer()
             }
         }
     }
@@ -58,7 +48,6 @@ open class MainActivity : AppCompatActivity() {
         const val UPDATE_PLAYLIST = "UPDATE_PLAYLIST"
         const val INSERT_FAVORITE = "REFRESH_FAVORITE"
         const val REMOVE_FAVORITE = "REMOVE_FAVORITE"
-        const val TRAKTEER_CHANGED = "TRAKTEER_CHANGED"
     }
 
     @SuppressLint("DefaultLocale")
@@ -79,39 +68,10 @@ open class MainActivity : AppCompatActivity() {
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(broadcastReceiver, IntentFilter(MAIN_CALLBACK))
 
-        // running-text widget from Trakteer (real-time over websocket)
-        startTrakteer()
-
         // set playlist
         if (!Playlist.cached.isCategoriesEmpty()) setPlaylistToAdapter(Playlist.cached)
         else showAlertPlaylistError(getString(R.string.null_playlist))
 
-    }
-
-    /** Starts the Trakteer running-text widget when it's enabled. */
-    private fun startTrakteer() {
-        if (!preferences.trakteerEnabled) return
-        trakteerClient = TrakteerClient(
-            token = preferences.trakteerToken,
-            onMessages = { messages, _ ->
-                trakteerMessages = messages
-                updateBanner()
-            },
-            onError = { message ->
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-                trakteerMessages = emptyList()
-                updateBanner()
-            }
-        ).also { it.start() }
-    }
-
-    /** Reconnects with the current settings after they change. */
-    private fun restartTrakteer() {
-        trakteerClient?.stop()
-        trakteerClient = null
-        trakteerMessages = emptyList()
-        startTrakteer()
-        updateBanner()
     }
 
     private fun setLoadingPlaylist(show: Boolean) {
@@ -148,8 +108,7 @@ open class MainActivity : AppCompatActivity() {
         binding.rvCategoryNav.adapter = navAdapter
 
         // running-text banner from the playlist message
-        playlistMessage = playlistSet.message
-        updateBanner()
+        setBanner(playlistSet.message)
 
         // write cache
         Playlist.cached = playlistSet
@@ -187,56 +146,16 @@ open class MainActivity : AppCompatActivity() {
         navAdapter?.setSelected(idx)
     }
 
-    /**
-     * Rebuilds the bottom banner: the clock (always) plus the playlist message and each Trakteer
-     * support message, rotating between them. Each entry is its own marquee, so long messages
-     * still scroll and the banner cycles through them every few seconds.
-     */
-    @SuppressLint("RtlHardcoded")
-    private fun updateBanner() {
-        val messages = buildList {
-            if (!playlistMessage.isNullOrBlank()) add(playlistMessage)
-            addAll(trakteerMessages)
-        }
-
-        val flipper = binding.bannerFlipper
-        flipper.stopFlipping()
-        flipper.removeAllViews()
-
-        if (messages.isEmpty()) {
+    private fun setBanner(message: String?) {
+        if (message.isNullOrBlank()) {
             binding.banner.visibility = View.GONE
-            binding.bannerDivider.visibility = View.GONE
+            binding.banner.text = ""
             return
         }
-
+        // pad the ends so the looping marquee keeps a gap between repeats
+        binding.banner.text = "    $message    "
         binding.banner.visibility = View.VISIBLE
-        binding.bannerDivider.visibility = View.VISIBLE
-        messages.forEach { message ->
-            val marquee = TextView(this).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                setTextColor(android.graphics.Color.WHITE)
-                textSize = 14f
-                maxLines = 1
-                ellipsize = TextUtils.TruncateAt.MARQUEE
-                marqueeRepeatLimit = -1 // forever
-                isHorizontalScrollBarEnabled = false
-                isFocusable = true
-                isFocusableInTouchMode = true
-                // pad the ends so the looping marquee keeps a gap between repeats
-                text = "    $message    "
-            }
-            flipper.addView(marquee)
-        }
-
-        // the marquee animation only runs while the view has focus; MarqueeFlipper re-arms it
-        // on every flip, so we just have to kick the first child off
-        flipper.setInAnimation(this, 0)
-        flipper.setOutAnimation(this, 0)
-        flipper.setDisplayedChild(0)
-        flipper.startFlipping()
+        binding.banner.isSelected = true // required for the marquee to animate without focus
     }
 
     private fun channelSpanCount(): Int {
@@ -283,8 +202,7 @@ open class MainActivity : AppCompatActivity() {
         navAdapter?.clear()
         binding.rvChannels.adapter = null
         binding.textCurrentCategory.text = ""
-        playlistMessage = null
-        updateBanner()
+        setBanner(null)
         val playlistSet = Playlist()
 
         SourcesReader().set(preferences.sources, object: SourcesReader.Result {
@@ -347,7 +265,6 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        trakteerClient?.stop()
         LocalBroadcastManager.getInstance(this)
             .unregisterReceiver(broadcastReceiver)
         super.onDestroy()

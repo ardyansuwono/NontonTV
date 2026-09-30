@@ -161,50 +161,28 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- BOTTOM BANNER : clock + rotating running-text messages -->
-        <LinearLayout
+        <!-- BOTTOM BANNER : running-text message from the playlist -->
+        <TextView
             android:id="@+id/banner"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
             android:background="@color/brand_indigo_dark"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
-
-            <TextClock
-                android:id="@+id/clock"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:format12Hour="HH:mm"
-                android:format24Hour="HH:mm"
-                android:textColor="@android:color/white"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                tools:ignore="TextClockDeprecation" />
-
-            <View
-                android:id="@+id/banner_divider"
-                android:layout_width="1dp"
-                android:layout_height="20dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="#33FFFFFF"
-                android:visibility="gone" />
-
-            <id.tipime.tipistream.extra.MarqueeFlipper
-                android:id="@+id/banner_flipper"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:autoStart="true"
-                android:flipInterval="8000" />
-        </LinearLayout>
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="//// TipiStream Open Donasi via DANA: 085157386617 ////"
+            tools:visibility="visible" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
