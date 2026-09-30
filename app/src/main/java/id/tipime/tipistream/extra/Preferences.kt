@@ -35,6 +35,8 @@ class Preferences {
         private const val VOLUME_CONTROL = "VOLUME_CONTROL"
         private const val SOURCES_PLAYLIST = "SOURCES_PLAYLIST"
         private const val COUNTRY_ID = "COUNTRY_ID"
+        private const val TRAKTEER_TOKEN = "TRAKTEER_TOKEN"
+        private const val TRAKTEER_ENABLED = "TRAKTEER_ENABLED"
     }
 
     var isFirstTime: Boolean
@@ -173,6 +175,22 @@ class Preferences {
         get() = preferences.getFloat(VOLUME_CONTROL, 1F)
         set(value) {
             editor.putFloat(VOLUME_CONTROL, value)
+            editor.apply()
+        }
+
+    /** Token widget running-text dari overlay.trakteer.id (default: bawaan app). */
+    var trakteerToken: String
+        get() = preferences.getString(TRAKTEER_TOKEN,
+            context.getString(R.string.trakteer_token_default)).toString()
+        set(value) {
+            editor.putString(TRAKTEER_TOKEN, value)
+            editor.apply()
+        }
+
+    var trakteerEnabled: Boolean
+        get() = preferences.getBoolean(TRAKTEER_ENABLED, true)
+        set(value) {
+            editor.putBoolean(TRAKTEER_ENABLED, value)
             editor.apply()
         }
 }

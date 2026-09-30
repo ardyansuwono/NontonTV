@@ -84,4 +84,9 @@
     <string name="link_copied_to_clipboard">Tautan disalin ke papan klip!</string>
     <string name="warning_none_source_active">Tidak ada sumber yang aktif, default akan diaktifkan!</string>
     <string name="more_information">Informasi Lain :</string>
+
+    <!-- trakteer running-text widget -->
+    <string name="trakteer_enable">Tampilkan running text Trakteer</string>
+    <string name="trakteer_empty">Belum ada dukungan</string>
+    <string name="trakteer_invalid_token">Token Trakteer tidak valid, running text dimatikan</string>
 </resources>

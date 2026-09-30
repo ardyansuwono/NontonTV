@@ -65,11 +65,35 @@ fun String.toClearKey(): ByteArray {
     // In that case use it verbatim — trying to hex-split it on ':' throws
     // NumberFormatException in decodeHex() and force-closes the player.
     if (raw.startsWith("{")) return raw.toByteArray()
-    // Otherwise it's the "kid:key" hex shorthand -> build the license JSON.
-    val keyId = raw.substringBefore(":").decodeHex().toBase64Url()
-    val keyValue = raw.substringAfter(":").decodeHex().toBase64Url()
-    return """{"keys":[{"kty":"oct","k":"$keyValue","kid":"$keyId"}],"type":"temporary"}""".toByteArray()
+    // Otherwise it's the "kid:key" hex shorthand. Build the license JSON from every pair —
+    // live ClearKey streams (e.g. MAXTV) rotate keys, so several pairs must all be supplied.
+    val keys = raw.parseClearKeyPairs().joinToString(",") { (kid, key) ->
+        """{"kty":"oct","kid":"${kid.decodeHex().toBase64Url()}","k":"${key.decodeHex().toBase64Url()}"}"""
+    }
+    return """{"keys":[$keys],"type":"temporary"}""".toByteArray()
 }
+
+/**
+ * Parses the ClearKey "kid:key" hex shorthand into (kid, key) pairs. Accepts a single pair or many,
+ * separated by commas / semicolons / whitespace / newlines — so a one-line "aa:bb,cc:dd" playlist
+ * value and a pasted "--key aa:bb --key cc:dd" dump both work (the "--key" tokens carry no ':' and
+ * are skipped). Only well-formed 16-byte (32-hex-char) pairs are kept; anything else is dropped so
+ * a stray token can't crash decodeHex(). Returns lowercase hex pairs.
+ */
+fun String.parseClearKeyPairs(): List<Pair<String, String>> {
+    return this.split(',', ';', ' ', '\t', '\n', '\r')
+        .mapNotNull { token ->
+            val t = token.trim()
+            if (!t.contains(':')) return@mapNotNull null
+            val kid = t.substringBefore(':').trim().lowercase()
+            val key = t.substringAfter(':').trim().lowercase()
+            if (kid.length == 32 && key.length == 32 && kid.isHexString() && key.isHexString())
+                Pair(kid, key) else null
+        }
+}
+
+private fun String.isHexString(): Boolean =
+    isNotEmpty() && all { it in '0'..'9' || it in 'a'..'f' }
 
 fun String.toCRC32(): String {
     val bytes = this.toByteArray()

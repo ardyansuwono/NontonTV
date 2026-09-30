@@ -115,4 +115,13 @@
     <string name="malaysia" translatable="false">Malaysia</string>
     <string name="singapore" translatable="false">Singapore</string>
     <string name="south_korea" translatable="false">South Korea</string>
+
+    <!-- trakteer running-text widget -->
+    <string name="trakteer_token_default" translatable="false">trv2-hYkvTk5qIqwi0j461tjZgXB0ZuZ5wdrCm6Q06eouLJ8oRhOkcBxzrqv</string>
+    <string name="trakteer_running_text" translatable="false">Trakteer Running Text</string>
+    <string name="trakteer_token" translatable="false">Trakteer Token</string>
+    <string name="trakteer_token_hint">Token widget running-text dari overlay.trakteer.id</string>
+    <string name="trakteer_enable">Tampilkan running text Trakteer</string>
+    <string name="trakteer_empty">Belum ada dukungan</string>
+    <string name="trakteer_invalid_token">Token Trakteer tidak valid, running text dimatikan</string>
 </resources>

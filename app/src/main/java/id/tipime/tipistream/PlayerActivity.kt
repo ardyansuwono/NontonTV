@@ -667,27 +667,32 @@ class PlayerActivity : AppCompatActivity() {
         return null
     }
 
-    /** Extracts the 16-byte KIDs from a ClearKey license JSON ({"keys":[{"kid":"…"}…]}).
-     *  Returns empty for the "kid:key" hex shorthand or any parse failure. */
+    /** Extracts the 16-byte KIDs from a ClearKey license, whether it's a full license JSON
+     *  ({"keys":[{"kid":"…"}…]}, with base64url KIDs) or the "kid:key" hex shorthand (one or many
+     *  pairs). These KIDs are injected into the manifest so ExoPlayer's ClearKey path requests them
+     *  even when the DASH manifest only advertises Widevine/PlayReady (as MAXTV does). Returns empty
+     *  on any parse failure. */
     private fun parseClearKeyIds(license: String): List<UUID> {
-        val json = license.trim()
-        if (!json.startsWith("{")) return emptyList()
-        return try {
-            val arr = JSONObject(json).optJSONArray("keys") ?: return emptyList()
-            val ids = ArrayList<UUID>()
-            for (i in 0 until arr.length()) {
-                val kid = arr.getJSONObject(i).optString("kid")
-                if (kid.isNullOrBlank()) continue
-                val bytes = Base64.decode(kid, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-                if (bytes.size == 16) {
-                    val bb = ByteBuffer.wrap(bytes)
-                    ids.add(UUID(bb.long, bb.long))
+        val raw = license.trim()
+        val kidBytes: List<ByteArray> = try {
+            if (raw.startsWith("{")) {
+                val arr = JSONObject(raw).optJSONArray("keys") ?: return emptyList()
+                (0 until arr.length()).mapNotNull { i ->
+                    val kid = arr.getJSONObject(i).optString("kid")
+                    if (kid.isNullOrBlank()) null
+                    else Base64.decode(kid, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
                 }
+            } else {
+                // "kid:key" shorthand: the KID is the hex left half of each pair
+                raw.parseClearKeyPairs().map { it.first.decodeHex() }
             }
-            ids
         } catch (e: Exception) {
             Log.e("PlayerActivity", "parseClearKeyIds failed: ${e.message}")
-            emptyList()
+            return emptyList()
+        }
+        return kidBytes.mapNotNull { bytes ->
+            if (bytes.size != 16) null
+            else ByteBuffer.wrap(bytes).let { UUID(it.long, it.long) }
         }
     }
 
