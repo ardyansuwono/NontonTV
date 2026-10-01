@@ -1,6 +1,6 @@
 {
-    "versionCode": 540,
-    "versionName": "v2.4",
-    "changelog": ["iptv-org as default playlist", "app in landscape mode", "ffmpeg libs", "optimize prebuffer", "change player layout", "and more.."],
-    "downloadUrl": "https://github.com/hariimurti/NontonTV/releases/download/v2.4/net.harimurti.tv_v2.4_b540.apk"
+    "versionCode": 544,
+    "versionName": "v2.5",
+    "changelog": ["banner running text dengan pesan donasi Trakteer", "banner memutar pesan playlist + pesan supporter", "perbaikan force close pada banner", "perbarui pengecekan update ke repo baru"],
+    "downloadUrl": "https://github.com/ardyansuwono/NontonTV/releases/download/v2.5/id.tipime.tipistream_v2.5_b544.apk"
 }

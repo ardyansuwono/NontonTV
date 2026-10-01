@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An instant (no-op) animation used by MarqueeFlipper so message swaps are immediate.
+     ViewFlipper.setInAnimation(Context, 0) throws Resources$NotFoundException, so an empty
+     animation set is the correct way to say "no animation". -->
+<set xmlns:android="http://schemas.android.com/apk/res/android" />

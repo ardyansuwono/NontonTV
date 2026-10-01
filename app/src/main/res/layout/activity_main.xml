@@ -161,8 +161,8 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- BOTTOM BANNER : running-text message from the playlist -->
-        <TextView
+        <!-- BOTTOM BANNER : rotating running-text messages (playlist + Trakteer) -->
+        <id.tipime.tipistream.extra.MarqueeFlipper
             android:id="@+id/banner"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -171,18 +171,10 @@
             android:paddingEnd="16dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:singleLine="true"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="//// TipiStream Open Donasi via DANA: 085157386617 ////"
             tools:visibility="visible" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

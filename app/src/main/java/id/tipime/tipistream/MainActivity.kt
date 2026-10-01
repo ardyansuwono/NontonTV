@@ -33,6 +33,11 @@ open class MainActivity : AppCompatActivity() {
     private var categories: ArrayList<Category>? = null
     private var selectedIndex = 0
 
+    // running-text sources for the bottom banner
+    private var playlistMessage: String? = null
+    private var trakteerMessages: List<String> = emptyList()
+    private var trakteerClient: TrakteerClient? = null
+
     private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
             when(intent.getStringExtra(MAIN_CALLBACK)) {
@@ -48,6 +53,8 @@ open class MainActivity : AppCompatActivity() {
         const val UPDATE_PLAYLIST = "UPDATE_PLAYLIST"
         const val INSERT_FAVORITE = "REFRESH_FAVORITE"
         const val REMOVE_FAVORITE = "REMOVE_FAVORITE"
+        // hard-coded for the proof of concept; stage 3 moves this to the App settings tab
+        private const val TRAKTEER_KEY = "trstream-yvOAUf9Z6t5e7jt9qBUw"
     }
 
     @SuppressLint("DefaultLocale")
@@ -72,6 +79,25 @@ open class MainActivity : AppCompatActivity() {
         if (!Playlist.cached.isCategoriesEmpty()) setPlaylistToAdapter(Playlist.cached)
         else showAlertPlaylistError(getString(R.string.null_playlist))
 
+        // running-text widget from Trakteer (one-shot REST fetch for now)
+        startTrakteer()
+
+    }
+
+    /** Starts the Trakteer running-text widget. */
+    private fun startTrakteer() {
+        trakteerClient = TrakteerClient(
+            key = TRAKTEER_KEY,
+            onMessages = { messages ->
+                trakteerMessages = messages
+                updateBanner()
+            },
+            onError = { _ ->
+                // a failed donation feed just means no donation messages; keep the banner quiet
+                trakteerMessages = emptyList()
+                updateBanner()
+            }
+        ).also { it.start() }
     }
 
     private fun setLoadingPlaylist(show: Boolean) {
@@ -108,7 +134,8 @@ open class MainActivity : AppCompatActivity() {
         binding.rvCategoryNav.adapter = navAdapter
 
         // running-text banner from the playlist message
-        setBanner(playlistSet.message)
+        playlistMessage = playlistSet.message
+        updateBanner()
 
         // write cache
         Playlist.cached = playlistSet
@@ -146,16 +173,18 @@ open class MainActivity : AppCompatActivity() {
         navAdapter?.setSelected(idx)
     }
 
-    private fun setBanner(message: String?) {
-        if (message.isNullOrBlank()) {
-            binding.banner.visibility = View.GONE
-            binding.banner.text = ""
-            return
+    /**
+     * Rebuilds the bottom banner with the playlist message followed by each Trakteer support
+     * message, rotating between them. Each entry is its own marquee, so long messages still
+     * scroll and the banner cycles through them every few seconds.
+     */
+    private fun updateBanner() {
+        val messages = buildList {
+            val msg = playlistMessage
+            if (!msg.isNullOrBlank()) add(msg)
+            addAll(trakteerMessages)
         }
-        // pad the ends so the looping marquee keeps a gap between repeats
-        binding.banner.text = "    $message    "
-        binding.banner.visibility = View.VISIBLE
-        binding.banner.isSelected = true // required for the marquee to animate without focus
+        binding.banner.messages = messages
     }
 
     private fun channelSpanCount(): Int {
@@ -202,7 +231,8 @@ open class MainActivity : AppCompatActivity() {
         navAdapter?.clear()
         binding.rvChannels.adapter = null
         binding.textCurrentCategory.text = ""
-        setBanner(null)
+        playlistMessage = null
+        updateBanner()
         val playlistSet = Playlist()
 
         SourcesReader().set(preferences.sources, object: SourcesReader.Result {
@@ -265,6 +295,7 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        trakteerClient?.stop()
         LocalBroadcastManager.getInstance(this)
             .unregisterReceiver(broadcastReceiver)
         super.onDestroy()
