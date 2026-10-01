@@ -1,0 +1,93 @@
+# Cara Compile APK TipiStream (Mandiri)
+
+App: **TipiStream** (`id.tipime.tipistream`)
+Repo: https://github.com/ardyansuwono/NontonTV
+Dibutuhkan: **JDK 21** (versi 25/default akan gagal!) + Android SDK.
+
+---
+
+## 1. Jalankan di terminal (sekali per sesi)
+
+```bash
+cd /workspaces/NontonTV
+export JAVA_HOME=/home/codespace/java/21.0.12+1-ms
+export ANDROID_HOME=$HOME/android-sdk
+```
+
+## 2. Build
+
+**APK Debug** (bisa di-install, untuk test cepat, tidak ubah nomor rilis):
+```bash
+./gradlew :app:assembleDebug
+```
+
+**APK Release** (signed, untuk publikasi):
+```bash
+./gradlew :app:assembleRelease
+```
+
+## 3. Lokasi output
+
+- Debug:   `app/build/outputs/apk/debug/id.tipime.tipistream_v2.5_b*.apk`
+- Release: `app/build/outputs/apk/release/id.tipime.tipistream_v2.5_b*.apk`
+
+---
+
+## CARA CEPAT (langsung, tanpa export)
+
+```bash
+cd /workspaces/NontonTV && JAVA_HOME=/home/codespace/java/21.0.12+1-ms ANDROID_HOME=$HOME/android-sdk ./gradlew :app:assembleDebug
+```
+
+Atau pakai script siap pakai:
+
+```bash
+./build.sh          # debug
+./build.sh release  # release (signed)
+```
+
+---
+
+## ATURAN VERSION CODE — BACA DULU
+
+`assembleRelease` **otomatis naikkan VERSION_CODE** di `app/version.prop` setiap dijalankan.
+
+- **Jangan** `assembleRelease` berulang-ulang untuk test — nomor build (b546, b547, ...) akan
+  terus naik padahal belum dirilis. Untuk test cukup `assembleDebug`.
+- Setelah `assembleRelease`, **sinkronkan** `json/release.json` dengan nomor baru, lalu commit
+  `app/version.prop` + `json/release.json`.
+
+Contoh: setelah build menghasilkan `..._v2.5_b547.apk`, ubah `json/release.json`:
+```json
+{
+    "versionCode": 547,
+    "versionName": "v2.5",
+    "changelog": ["..."],
+    "downloadUrl": "https://github.com/ardyansuwono/NontonTV/releases/download/v2.5/id.tipime.tipistream_v2.5_b547.apk"
+}
+```
+
+## Naikkan versi besar (v2.5 → v2.6)
+
+Ubah `app/build.gradle`:
+```
+versionName "2.6"
+```
+Lalu buat GitHub release baru `v2.6` dan upload APK-nya.
+
+## Upload ke GitHub Release
+
+```bash
+gh release upload v2.5 <path-apk> --clobber --repo ardyansuwono/NontonTV
+```
+(Pakai `--repo ardyansuwono/NontonTV` wajib — gh salah kirim ke repo upstream kalau tidak.)
+
+---
+
+## TROUBLESHOOTING
+
+- **Build gagal / error JDK**: pastikan `JAVA_HOME` ke `21.0.12+1-ms`, bukan default.
+- **APK release tidak bisa di-install**: keystore/signing belum ada. Kebutuhan: `app/keystore/tipistream-release.jks`
+  + `app/keystore/secrets.env` (keduanya di-gitignore, simpan offline!). Build akan unsigned kalau
+  file ini tidak ada.
+- **Keystore hilang = tidak bisa update lagi**. WAJIB backup `app/keystore/*.jks` & `secrets.env`.
