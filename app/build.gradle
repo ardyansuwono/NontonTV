@@ -21,6 +21,25 @@ android {
         }
     }
 
+    // Release signing. Passwords live in app/keystore/secrets.env (gitignored); fall back to an
+    // unsigned release if the keystore is missing so CI/other clones can still build.
+    def keystoreFile = file('keystore/tipistream-release.jks')
+    def secretsFile = file('keystore/secrets.env')
+    def keystoreProps = new Properties()
+    if (secretsFile.canRead()) keystoreProps.load(new FileInputStream(secretsFile))
+    def hasSigning = keystoreFile.canRead() && keystoreProps.containsKey('KEYSTORE_PASSWORD')
+
+    signingConfigs {
+        release {
+            if (hasSigning) {
+                storeFile keystoreFile
+                storePassword keystoreProps['KEYSTORE_PASSWORD']
+                keyAlias 'tipistream'
+                keyPassword keystoreProps['KEYSTORE_PASSWORD']
+            }
+        }
+    }
+
     compileSdk 35
     buildToolsVersion "35.0.0"
     compileOptions {
@@ -54,6 +73,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasSigning) signingConfig signingConfigs.release
             applicationVariants.all { variant ->
                 variant.outputs.all {
                     outputFileName = "${defaultConfig.applicationId}_v${defaultConfig.versionName}_b${defaultConfig.versionCode}.apk"

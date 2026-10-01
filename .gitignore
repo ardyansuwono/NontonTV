@@ -79,3 +79,8 @@ lint/tmp/
 /json/tipi.m3u
 /UI Daftar Channel.jpg
 /tipistream_logo.png
+
+# TipiStream release signing secrets — never commit
+app/keystore/*.jks
+app/keystore/*.keystore
+app/keystore/secrets.env
